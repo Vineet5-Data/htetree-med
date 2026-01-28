@@ -34,18 +34,18 @@ usersplit_init(int n, double *y[], int maxcat, char **error,
 * The user evaluation function
 */
 void
-usersplit_eval(int n, double *y[], double *value, double *tr_mean, double *con_mean,
-	       double *risk, double *wt, double *treatment, double max_y,
-	       double alpha, double train_to_est_ratio)
+usersplit_eval(int n, double *y[], double *value, double *con_mean,
+	       double *tr_mean, double *risk, double *wt)
 {
     int i;
 
     causalTree_callback1(n, y, wt, uscratch);
     *risk = uscratch[0];
-    for (i = 0; i < n_return; i++)
-	value[i] = uscratch[i + 1];
-	*tr_mean = NA_REAL;
     *con_mean = NA_REAL;
+    *tr_mean = NA_REAL;
+    for (i = 1; i < n_return; i++) {
+	value[i] = uscratch[i + 1];
+	}
 }
 
 /*
