@@ -1,10 +1,52 @@
 /*
- * split.Rule = user (Median Absolute Deviation)
+ * split.Rule = med (Median Absolute Deviation)
  */
 #include <math.h>
 #include "causalTree.h"
+#include <stdlib.h>
 #include "causalTreeproto.h"
 #include "Medianfunction.h"
+
+static int compare_double(const void *left, const void *right)
+{
+	const double left_val = *(const double *)left;
+	const double right_val = *(const double *)right;
+
+	if (left_val < right_val) {
+		return -1;
+	}
+	if (left_val > right_val) {
+		return 1;
+	}
+	return 0;
+}
+
+static double hodges_lehmann_estimator(const double *treat, const double *control,
+		int treat_n, int control_n)
+{
+	int i;
+	int j;
+	int total = treat_n * control_n;
+	double *diffs;
+
+	if (treat_n <= 0 || control_n <= 0) {
+		return 0.0;
+	}
+
+	diffs = (double *) ALLOC(total, sizeof(double));
+	for (i = 0; i < treat_n; i++) {
+		for (j = 0; j < control_n; j++) {
+			diffs[i * control_n + j] = treat[i] - control[j];
+		}
+	}
+
+	qsort(diffs, total, sizeof(double), compare_double);
+
+	if (total % 2 == 1) {
+		return diffs[total / 2];
+	}
+	return 0.5 * (diffs[(total / 2) - 1] + diffs[total / 2]);
+}
 
 static double *sums, *wtsums, *treatment_effect;
 static double *wts, *trs, *trsums;
@@ -13,7 +55,7 @@ static int *tsplit;
 static double *wtsqrsums, *trsqrsums;
 
 int
-userinit(int n, double *y[], int maxcat, char **error,
+medinit(int n, double *y[], int maxcat, char **error,
 		int *size, int who, double *wt, double *treatment, 
 		int bucketnum, int bucketMax, double *train_to_est_ratio)
 {
@@ -35,9 +77,18 @@ userinit(int n, double *y[], int maxcat, char **error,
 	return 0;
 }
 
+int
+medDinit(int n, double *y[], int maxcat, char **error,
+		int *size, int who, double *wt, double *treatment,
+		int bucketnum, int bucketMax, double *train_to_est_ratio)
+{
+	return medinit(n, y, maxcat, error, size, who, wt, treatment,
+		bucketnum, bucketMax, train_to_est_ratio);
+}
+
 
 void
-userss(int n, double *y[], double *value,  double *con_mean, double *tr_mean, 
+medss(int n, double *y[], double *value,  double *con_mean, double *tr_mean, 
        double *risk, double *wt, double *treatment, double max_y,
        double alpha, double train_to_est_ratio)
 {
@@ -97,7 +148,16 @@ con_var = con_sqr_sum / (twt - ttreat) - temp0 * temp0 / ((twt - ttreat) * (twt 
  *risk = 4 * twt * max_y * max_y- alpha * fabs(effect * twt - medianestimator); // have to take a closer look 
 }
 
-void user(int n, double *y[], double *x, int nclass, int edge, double *improve, double *split, 
+void medDss(int n, double *y[], double *value,  double *con_mean, double *tr_mean,
+       double *risk, double *wt, double *treatment, double max_y,
+       double alpha, double train_to_est_ratio)
+{
+	medss(n, y, value, con_mean, tr_mean, risk, wt, treatment, max_y,
+		alpha, train_to_est_ratio);
+}
+
+
+void med(int n, double *y[], double *x, int nclass, int edge, double *improve, double *split, 
 		int *csplit, double myrisk, double *wt, double *treatment, int minsize, double alpha,
 		double train_to_est_ratio)
 {
@@ -403,8 +463,19 @@ for (i = 0; i < n-tr_n; i++) {
 }
 
 
+void medD(int n, double *y[], double *x, int nclass, int edge, double *improve, double *split,
+		int *csplit, double myrisk, double *wt, double *treatment, int minsize, double alpha,
+		int bucketnum, int bucketMax, double train_to_est_ratio)
+{
+	(void)bucketnum;
+	(void)bucketMax;
+	med(n, y, x, nclass, edge, improve, split, csplit, myrisk, wt, treatment,
+		minsize, alpha, train_to_est_ratio);
+}
+
+
 double
-userpred(double *y, double wt, double treatment, double *yhat, double propensity)
+medpred(double *y, double wt, double treatment, double *yhat, double propensity)
 {
 	double ystar;
 	double temp;
@@ -414,3 +485,8 @@ userpred(double *y, double wt, double treatment, double *yhat, double propensity
 	return temp * temp * wt;
 }
 
+double
+medDpred(double *y, double wt, double treatment, double *yhat, double propensity)
+{
+	return medpred(y, wt, treatment, yhat, propensity);
+}

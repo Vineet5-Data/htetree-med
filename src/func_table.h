@@ -100,16 +100,17 @@ extern void tstatsD(int n, double *y[], double *x, int nclass,
 extern double tstatsDpred(double *y, double wt, double treatment, double *yhat, double propensity);
 
 
-
-extern int userinit(int n, double *y[], int maxcat, char **error,
+extern int usersplit_init(int n, double *y[], int maxcat, char **error,
                   int *size, int who, double *wt, double *treatment, int bucketnum,
                   int bucketMax, double *train_to_est_ratio);
-extern void userss(int n, double *y[], double *value, double *tr_mean, double *con_mean, double *risk,
-                 double *wt, double *treatment, double max_y, double alpha, double train_to_est_ratio);
-extern void user(int n, double *y[], double *x, int nclass,int edge, double *improve, double *split,
-               int *csplit, double myrisk, double *wt, double *treatment, int minsize, double alpha,
-               double train_to_est_ratio);
-extern double userpred(double *y, double wt, double treatment, double *yhat, double propensity);
+extern void usersplit_eval(int n, double *y[], double *value, double *tr_mean, double *con_mean,
+                 double *risk, double *wt, double *treatment, double max_y, double alpha,
+                 double train_to_est_ratio);
+extern void usersplit(int n, double *y[], double *x, int nclass,int edge, double *improve,
+               double *split, int *csplit, double myrisk, double *wt, double *treatment,
+               int minsize, double alpha, double train_to_est_ratio);
+extern double usersplit_pred(double *y, double wt, double treatment, double *yhat, double propensity);
+
 
 extern int userDinit(int n, double *y[], int maxcat, char **error, int *size,
                    int who, double *wt, double *treatment, int bucketnum, int bucketMax,
@@ -147,6 +148,28 @@ extern void policyD(int n, double *y[], double *x, int nclass,
                   int bucketMax, double train_to_est_ratio);
 extern double policyDpred(double *y, double wt, double treatment, double *yhat,
                         double propensity);
+
+
+extern int medinit(int n, double *y[], int maxcat, char **error,
+                 int *size, int who, double *wt, double *treatment, int bucketnum,
+                 int bucketMax, double *train_to_est_ratio);
+extern void medss(int n, double *y[], double *value, double *tr_mean, double *con_mean, double *risk,
+                double *wt, double *treatment, double max_y, double alpha, double train_to_est_ratio);
+extern void med(int n, double *y[], double *x, int nclass, int edge, double *improve, double *split,
+              int *csplit, double myrisk, double *wt, double *treatment, int minsize, double alpha,
+              double train_to_est_ratio);
+extern double medpred(double *y, double wt, double treatment, double *yhat, double propensity);
+
+
+extern int medDinit(int n, double *y[], int maxcat, char **error,
+                 int *size, int who, double *wt, double *treatment, int bucketnum,
+                 int bucketMax, double *train_to_est_ratio);
+extern void medDss(int n, double *y[], double *value, double *tr_mean, double *con_mean, double *risk,
+                double *wt, double *treatment, double max_y, double alpha, double train_to_est_ratio);
+extern void medD(int n, double *y[], double *x, int nclass, int edge, double *improve, double *split,
+              int *csplit, double myrisk, double *wt, double *treatment, int minsize, double alpha,
+              double train_to_est_ratio);
+extern double medDpred(double *y, double wt, double treatment, double *yhat, double propensity);
 
 
 /* ------------------------------------------------------ --------------------------- */
@@ -225,10 +248,12 @@ static struct {
     {CTDinit, (void (*)(int n,double *y[],double *x,int nclass,int edge,double *improve,double *split,int *csplit,double myrisk,double *wt,double *treatment, ...))CTD, (void (*)(int n,double *y[],double *value,double *tr_mean,double *con_mean,double *risk,double *wt,double *treatment,double max_y, ...))CTDss, (double (*)(char))CTDpred},
     {fitDinit, (void (*)(int n,double *y[],double *x,int nclass,int edge,double *improve,double *split,int *csplit,double myrisk,double *wt,double *treatment, ...))fitD, (void (*)(int n,double *y[],double *value,double *tr_mean,double *con_mean,double *risk,double *wt,double *treatment,double max_y, ...))fitDss, (double (*)(char))fitDpred},
     {tstatsDinit, (void (*)(int n,double *y[],double *x,int nclass,int edge,double *improve,double *split,int *csplit,double myrisk,double *wt,double *treatment, ...))tstatsD, (void (*)(int n,double *y[],double *value,double *tr_mean,double *con_mean,double *risk,double *wt,double *treatment,double max_y, ...))tstatsDss, (double (*)(char))tstatsDpred},
-    {userinit, (void (*)(int n,double *y[],double *x,int nclass,int edge,double *improve,double *split,int *csplit,double myrisk,double *wt,double *treatment, ...))user, (void (*)(int n,double *y[],double *value,double *tr_mean,double *con_mean,double *risk,double *wt,double *treatment,double max_y, ...))userss, (double (*)(char))userpred},
+    {usersplit_init, (void (*)(int n,double *y[],double *x,int nclass,int edge,double *improve,double *split,int *csplit,double myrisk,double *wt,double *treatment, ...))usersplit, (void (*)(int n,double *y[],double *value,double *tr_mean,double *con_mean,double *risk,double *wt,double *treatment,double max_y, ...))usersplit_eval, (double (*)(char))usersplit_pred},
     {userDinit, (void (*)(int n,double *y[],double *x,int nclass,int edge,double *improve,double *split,int *csplit,double myrisk,double *wt,double *treatment, ...))userD, (void (*)(int n,double *y[],double *value,double *tr_mean,double *con_mean,double *risk,double *wt,double *treatment,double max_y, ...))userDss, (double (*)(char))userDpred},
     {policyinit, (void (*)(int n,double *y[],double *x,int nclass,int edge,double *improve,double *split,int *csplit,double myrisk,double *wt,double *treatment, ...))policy, (void (*)(int n,double *y[],double *value,double *tr_mean,double *con_mean,double *risk,double *wt,double *treatment,double max_y, ...))policyss, (double (*)(char))policypred},
     {policyDinit, (void (*)(int n,double *y[],double *x,int nclass,int edge,double *improve,double *split,int *csplit,double myrisk,double *wt,double *treatment, ...))policyD, (void (*)(int n,double *y[],double *value,double *tr_mean,double *con_mean,double *risk,double *wt,double *treatment,double max_y, ...))policyDss, (double (*)(char))policyDpred},
+    {medinit, (void (*)(int n,double *y[],double *x,int nclass,int edge,double *improve,double *split,int *csplit,double myrisk,double *wt,double *treatment, ...))med, (void (*)(int n,double *y[],double *value,double *tr_mean,double *con_mean,double *risk,double *wt,double *treatment,double max_y, ...))medss, (double (*)(char))medpred},
+    {medDinit, (void (*)(int n,double *y[],double *x,int nclass,int edge,double *improve,double *split,int *csplit,double myrisk,double *wt,double *treatment, ...))medD, (void (*)(int n,double *y[],double *value,double *tr_mean,double *con_mean,double *risk,double *wt,double *treatment,double max_y, ...))medDss, (double (*)(char))medDpred},
 };
 
 static struct {
@@ -246,5 +271,5 @@ static struct {
     {(double (*)(double *y, ...))policyA_xpred},
 };
 
-#define NUM_SPLIT_RULE 12
+#define NUM_SPLIT_RULE 14
 #define NUM_CROSSMETH 11

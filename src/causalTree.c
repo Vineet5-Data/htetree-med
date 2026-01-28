@@ -328,7 +328,7 @@ causalTree(SEXP ncat2, SEXP split_Rule2, SEXP bucketnum2, SEXP bucketMax2, SEXP 
         (*ct_eval) (n, ct.ydata, tree->response_est, tree->controlMean, tree->treatMean,
          &(tree->risk), wt, treatment, ct.max_y, split_alpha, train_to_est_ratio);
     } else if (split_Rule == 9) {
-        // user (temporarily set as CT)
+        // user (callback)
         (*ct_eval) (n, ct.ydata, tree->response_est, tree->controlMean, tree->treatMean,
          &(tree->risk), wt, treatment, ct.max_y, split_alpha, train_to_est_ratio);
     } else if (split_Rule == 10) {
@@ -341,6 +341,14 @@ causalTree(SEXP ncat2, SEXP split_Rule2, SEXP bucketnum2, SEXP bucketMax2, SEXP 
          &(tree->risk), wt, treatment, ct.max_y, split_alpha, train_to_est_ratio);
     } else if (split_Rule == 12) {
       // policyD
+        (*ct_eval) (n, ct.ydata, tree->response_est, tree->controlMean, tree->treatMean,
+         &(tree->risk), wt, treatment, ct.max_y, split_alpha, train_to_est_ratio);
+    } else if (split_Rule == 13) {
+        // med
+        (*ct_eval) (n, ct.ydata, tree->response_est, tree->controlMean, tree->treatMean,
+         &(tree->risk), wt, treatment, ct.max_y, split_alpha, train_to_est_ratio);
+    } else if (split_Rule == 14) {
+        // medD
         (*ct_eval) (n, ct.ydata, tree->response_est, tree->controlMean, tree->treatMean,
          &(tree->risk), wt, treatment, ct.max_y, split_alpha, train_to_est_ratio);
     }

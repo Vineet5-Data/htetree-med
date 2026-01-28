@@ -10,7 +10,8 @@ static double *uscratch;        /* variously used scratch vector */
 
 int
 usersplit_init(int n, double *y[], int maxcat, char **error,
-	       double *parm, int *size, int who, double *wt)
+		   int *size, int who, double *wt, double *treatment,
+		   int bucketnum, int bucketMax, double *train_to_est_ratio)
 {
     if (who == 1) {
 	/* If who==0 we are being called internally via xval, and don't
@@ -25,6 +26,7 @@ usersplit_init(int n, double *y[], int maxcat, char **error,
 				     sizeof(double));
     }
     *size = n_return;
+	*train_to_est_ratio = n * 1.0 / ct.NumHonest;
     return 0;
 }
 
@@ -32,7 +34,9 @@ usersplit_init(int n, double *y[], int maxcat, char **error,
 * The user evaluation function
 */
 void
-usersplit_eval(int n, double *y[], double *value, double *risk, double *wt)
+usersplit_eval(int n, double *y[], double *value, double *tr_mean, double *con_mean,
+	       double *risk, double *wt, double *treatment, double max_y,
+	       double alpha, double train_to_est_ratio)
 {
     int i;
 
@@ -40,6 +44,8 @@ usersplit_eval(int n, double *y[], double *value, double *risk, double *wt)
     *risk = uscratch[0];
     for (i = 0; i < n_return; i++)
 	value[i] = uscratch[i + 1];
+	*tr_mean = NA_REAL;
+    *con_mean = NA_REAL;
 }
 
 /*
@@ -47,8 +53,8 @@ usersplit_eval(int n, double *y[], double *value, double *risk, double *wt)
  */
 void
 usersplit(int n, double *y[], double *x, int nclass, int edge,
-	  double *improve, double *split, int *csplit, double myrisk,
-	  double *wt)
+	  double *wt, double *treatment, int minsize, double alpha,
+	  double train_to_est_ratio)
 {
     int i, j, k;
     int m;
@@ -157,7 +163,7 @@ usersplit(int n, double *y[], double *x, int nclass, int edge,
  *    use of xpred.causalTree for user-written split routines).
  */
 double
-usersplit_pred(double *y, double *yhat)
+usersplit_pred(double *y, double wt, double treatment, double *yhat, double propensity)
 {
     return 0.0;
 }

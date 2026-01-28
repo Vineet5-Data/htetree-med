@@ -17,7 +17,7 @@
 #' \code{y} is missing, but keeps those in which one or more predictors
 #' are missing.
 #' @param split.Rule causalTree splitting options, one of \code{"TOT"},
-#' \code{"CT"}, \code{"fit"}, \code{"tstats"}, four splitting rules in
+#' \code{"CT"}, \code{"fit"}, \code{"tstats"}, \code{"med"}, five splitting rules in
 #' \code{causalTree}.  Note that the \code{"tstats"} alternative does
 #' not have an associated cross-validation method \code{cv.option};
 #' see Athey and Imbens (2016) for a discussion.  Note further
@@ -254,12 +254,12 @@ causalTree <- function(formula, data, weights, treatment, subset,
 	}
 
 	split.Rule.int <- pmatch(split.Rule, c("TOT", "CT", "fit", "tstats", "TOTD", "CTD",
-	                                       "fitD", "tstatsD", "user", "userD","policy","policyD"))
+	                                       "fitD", "tstatsD", "user", "userD","policy","policyD", "med", "medD"))
 	# print(split.Rule.int)
 	# print(split.Rule)
 	if (is.na(split.Rule.int)) stop("Invalid splitting rule.")
 	split.Rule <- c("TOT", "CT", "fit", "tstats", "TOTD", "CTD", "fitD",
-	                "tstatsD", "user", "userD","policy","policyD")[split.Rule.int]
+	                "tstatsD", "user", "userD","policy","policyD", "med", "medD")[split.Rule.int]
 
 	## check the Split.Honest, for convenience
 	if (split.Rule.int %in% c(1, 5)) {
@@ -283,7 +283,7 @@ causalTree <- function(formula, data, weights, treatment, subset,
 	if(is.na(split.Honest.num))
 		stop("Invalid split.Honest input, split.Honest can be only TRUE or FALSE.")
 
-	if (split.Honest == TRUE && split.Rule.int %in% c(2, 3, 4, 6, 7, 8, 9, 10,11,12)) {
+	if (split.Honest == TRUE && split.Rule.int %in% c(2, 3, 4, 6, 7, 8, 9, 10,11,12,13,14)) {
 		# ct, fit, tstats, ctd, fitd, tstatsd, user, userd,policy,policyD:
 		if(missing(split.alpha)) {
 			# set default honest splitting alpha to 0.5
@@ -305,7 +305,7 @@ causalTree <- function(formula, data, weights, treatment, subset,
 	    }
 	  }
 
-	} else if (split.Rule.int %in% c(2, 3, 4, 6, 7, 8, 9, 10,11,12)){
+	} else if (split.Rule.int %in% c(2, 3, 4, 6, 7, 8, 9, 10,11,12,13,14)){
 		# split.Honest = False
 		if (split.alpha != 1)
 			warning("For dishonest(adaptive) splitting, split.alpha =  1.");

@@ -97,7 +97,7 @@ partition(int nodenum, pNode splitnode, double *sumrisk, int n1, int n2,
 	        (*ct_eval) (n, ct.ytemp, me->response_est, me->controlMean, me->treatMean,
           &(me->risk), ct.wtemp, ct.trtemp, ct.max_y, alpha, train_to_est_ratio);
 	    } else if (split_Rule == 9) {
-	        // user (temporarily set as CT)
+	        // user (callback)
 	        (*ct_eval) (n, ct.ytemp, me->response_est, me->controlMean, me->treatMean,
           &(me->risk), ct.wtemp, ct.trtemp, ct.max_y, alpha, train_to_est_ratio);
 	    } else if (split_Rule == 10) {
@@ -112,6 +112,14 @@ partition(int nodenum, pNode splitnode, double *sumrisk, int n1, int n2,
 	      // policyD (temporarily set as CTD)
 	      (*ct_eval) (n, ct.ytemp, me->response_est, me->controlMean, me->treatMean,
         &(me->risk), ct.wtemp, ct.trtemp, ct.max_y, alpha, train_to_est_ratio);
+	    } else if (split_Rule == 13) {
+	        // med
+	        (*ct_eval) (n, ct.ytemp, me->response_est, me->controlMean, me->treatMean,
+		  &(me->risk), ct.wtemp, ct.trtemp, ct.max_y, alpha, train_to_est_ratio);
+	    }	else if (split_Rule == 14) {
+	        // medD
+	        (*ct_eval) (n, ct.ytemp, me->response_est, me->controlMean, me->treatMean,
+		  &(me->risk), ct.wtemp, ct.trtemp, ct.max_y, alpha, train_to_est_ratio);
 	    }
 
 	    me->num_obs = n;

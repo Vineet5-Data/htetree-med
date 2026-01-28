@@ -166,9 +166,8 @@ honest.causalTree <- function(formula, data, weights, treatment, subset,
 		split.Rule <- paste(split.Rule, 'D', sep = '')
 	}
 
-	split.Rule.int <- pmatch(split.Rule, c("TOT", "CT", "fit", "tstats", "TOTD", "CTD", "fitD", "tstatsD", "user", "userD","policy","policyD"))
+	split.Rule.int <- pmatch(split.Rule, c("TOT", "CT", "fit", "tstats", "TOTD", "CTD", "fitD", "tstatsD", "user", "userD","policy","policyD","med", "medD"))
 	if (is.na(split.Rule.int)) stop("Invalid splitting rule.")
-	split.Rule <- c("TOT", "CT", "fit", "tstats", "TOTD", "CTD", "fitD", "tstatsD", "user", "userD","policy","policyD")[split.Rule.int]
    # print(split.Rule.int)
    # print(split.Rule)
 	## check the Split.Honest, for convenience
@@ -192,7 +191,7 @@ honest.causalTree <- function(formula, data, weights, treatment, subset,
 	if(is.na(split.Honest.num))
 		stop("Invalid split.Honest input, split.Honest can be only TRUE or FALSE.")
 
-	if (split.Honest == TRUE && split.Rule.int %in% c(2, 3, 4, 6, 7, 8, 9, 10,11,12)) {
+	if (split.Honest == TRUE && split.Rule.int %in% c(2, 3, 4, 6, 7, 8, 9, 10,11,12,13,14)) {
 		# ct, fit, tstats, ctd, fitd, tstatsd, user, userd,policy,policyD:
 		if(missing(split.alpha)) {
 			# set default honest splitting alpha to 0.5
@@ -213,7 +212,7 @@ honest.causalTree <- function(formula, data, weights, treatment, subset,
 	      stop("Invalid input for split.gamma. split.gamma should between 0 and 1.")
 	    }
 	  }
-	} else if (split.Rule.int %in% c(2, 3, 4, 6, 7, 8, 9, 10,11,12)){
+	} else if (split.Rule.int %in% c(2, 3, 4, 6, 7, 8, 9, 10,11,12,13,14)){
 		# split.Honest = False
 		if (split.alpha != 1)
 			warning("For dishonest(adaptive) splitting, split.alpha =  1.");
