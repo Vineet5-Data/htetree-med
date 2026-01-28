@@ -3,9 +3,10 @@
  */
 #include <math.h>
 #include "causalTree.h"
-#include <stdlib.h>
 #include "causalTreeproto.h"
+#include <stdlib.h>
 
+// qsort to return the median of the sorted differences
 static int compare_double(const void *left, const void *right)
 {
 	const double left_val = *(const double *)left;
@@ -19,7 +20,7 @@ static int compare_double(const void *left, const void *right)
 	}
 	return 0;
 }
-
+// function for hodges_lehmann_estimator 
 static double hodges_lehmann_estimator(const double *treat, const double *control,
 		int treat_n, int control_n)
 {
@@ -32,7 +33,7 @@ static double hodges_lehmann_estimator(const double *treat, const double *contro
 		return 0.0;
 	}
 
-	diffs = (double *) R_alloc(total, sizeof(double));
+	diffs = (double *) ALLOC(total, sizeof(double));
 	for (i = 0; i < treat_n; i++) {
 		for (j = 0; j < control_n; j++) {
 			diffs[i * control_n + j] = treat[i] - control[j];
@@ -76,7 +77,7 @@ medinit(int n, double *y[], int maxcat, char **error,
 	return 0;
 }
 
-int
+int 
 medDinit(int n, double *y[], int maxcat, char **error,
 		int *size, int who, double *wt, double *treatment,
 		int bucketnum, int bucketMax, double *train_to_est_ratio)
@@ -84,7 +85,6 @@ medDinit(int n, double *y[], int maxcat, char **error,
 	return medinit(n, y, maxcat, error, size, who, wt, treatment,
 		bucketnum, bucketMax, train_to_est_ratio);
 }
-
 
 void
 medss(int n, double *y[], double *value,  double *con_mean, double *tr_mean, 
@@ -100,39 +100,22 @@ medss(int n, double *y[], double *value,  double *con_mean, double *tr_mean,
 	double con_sqr_sum = 0., tr_sqr_sum = 0.;
 	
 	double medianestimator; /* Hodges-Lehmann-Estimator */
-	int tr_n = 0;
-	int con_n = 0;
-	double *y_treat;
-	double *y_con;
+  int tr_n = 0; 
+  for(i = 0; i < n; i++) { /* # of treatment set  */
+    tr_n+= treatment[i];
+  }
+  double y_treat[tr_n]; /* outcome variable, which received treatment */
+  double y_con[(n-tr_n)]; /* outcome variable, which does not received treatment */
 
-	for (i = 0; i < n; i++) { /* # of treatment set  */
-		if (treatment[i] != 0) {
-			tr_n++;
-		} else {
-			con_n++;
-		}
-	}
-	if (tr_n == 0 || con_n == 0) {
-		*value = 0.0;
-		*con_mean = 0.0;
-		*tr_mean = 0.0;
-		*risk = 0.0;
-		return;
-	}
-
-	y_treat = (double *) ALLOC(tr_n, sizeof(double)); /* outcome variable, which received treatment */
-	y_con = (double *) ALLOC(con_n, sizeof(double)); /* outcome variable, which does not received treatment */
-
-	for (i = 0; i < n; i++) {
-		if (treatment[i] == 0) {
-			y_con[r]= *y[i] * wt[i]; /* fill entries of y_con*/
-			r++;
-		} else {
-			y_treat[k]= *y[i]* wt[i]; /* fill entries of y_treat*/
-			k++;
-		}
-	}
-
+for (i = 0; i < n; i++) {
+  if (treatment[i] == 0) {
+  y_con[r]= *y[i] * wt[i]; /* fill entries of y_con*/
+r++;
+} else {
+  y_treat[k]= *y[i]* wt[i]; /* fill entries of y_treat*/
+k++;
+}
+}
 
 	for (i = 0; i < n; i++) {
 		temp1 += *y[i] * wt[i] * treatment[i]; 
@@ -145,7 +128,7 @@ medss(int n, double *y[], double *value,  double *con_mean, double *tr_mean,
 	}
 //	medianestimator = testmean( y_treat,  ttreat) - testmean( y_con, (twt-ttreat));
 //		medianestimator = quick_select5( y_treat,  ttreat) - quick_select5( y_con, (twt-ttreat));
-   medianestimator = hodges_lehmann_estimator(y_treat, y_con, tr_n, con_n); 
+  medianestimator = hodges_lehmann_estimator(y_treat,y_con,ttreat,(twt-ttreat)); 
 // double ss=0;
 //  for (i = 0; i < n; i++) {
   //  temp = fabs(( (*y[i] - medianestimator) * treatment[i]) + ( (*y[i] - medianestimator) * (1-treatment[i]) ));
@@ -164,7 +147,8 @@ con_var = con_sqr_sum / (twt - ttreat) - temp0 * temp0 / ((twt - ttreat) * (twt 
  *risk = 4 * twt * max_y * max_y- alpha * fabs(effect * twt - medianestimator); // have to take a closer look 
 }
 
-void medDss(int n, double *y[], double *value,  double *con_mean, double *tr_mean,
+void
+medDss(int n, double *y[], double *value,  double *con_mean, double *tr_mean,
        double *risk, double *wt, double *treatment, double max_y,
        double alpha, double train_to_est_ratio)
 {
@@ -192,13 +176,8 @@ void med(int n, double *y[], double *x, int nclass, int edge, double *improve, d
 	int min_node_size = minsize;
 	
 	int tr_n = 0;
-	int con_n = 0;
 	for(i = 0; i < n; i++) {
-	  if (treatment[i] != 0) {
-	    tr_n++;
-	  } else {
-	    con_n++;
-	  }
+	  tr_n+= treatment[i];
 	}
 
 	double tr_var, con_var;
@@ -206,16 +185,9 @@ void med(int n, double *y[], double *x, int nclass, int edge, double *improve, d
 	double left_tr_var, left_con_var, right_tr_var, right_con_var;
 	
 	double medianeffect_estimator, right_medianeffect_estimator, left_medianeffect_estimator;
-	double *y_right_all_tr = (double *) ALLOC(tr_n, sizeof(double));
-	double *y_right_all_con = (double *) ALLOC(con_n, sizeof(double));
-	double *y_right_tr = (double *) ALLOC(tr_n, sizeof(double));
-	double *y_right_con = (double *) ALLOC(con_n, sizeof(double));
-	double *y_left_tr = (double *) ALLOC(tr_n, sizeof(double));
-	double *y_left_con = (double *) ALLOC(con_n, sizeof(double));
-	int left_tr_n = 0;
-	int left_con_n = 0;
-	int right_tr_n = tr_n;
-	int right_con_n = con_n;
+	double y_right_all_tr[tr_n], y_right_all_con[n-tr_n], y_right_tr[tr_n], y_right_con[n-tr_n];
+	double y_left_tr[tr_n];
+	double y_left_con[n-tr_n];
  
 	right_wt = 0.;
 	right_tr = 0.;
@@ -244,15 +216,14 @@ void med(int n, double *y[], double *x, int nclass, int edge, double *improve, d
 		}
 	}
 
-	for (i = 0; i < tr_n; i++) {
+for (i = 0; i < tr_n; i++) {
     y_right_tr[p]= y_right_all_tr[tr_n-1-i];
     p++;
     }
-	for (i = 0; i < con_n; i++) {
-  y_right_con[m]= y_right_all_con[(con_n)-1-i];
+for (i = 0; i < n-tr_n; i++) {
+  y_right_con[m]= y_right_all_con[(n-tr_n)-1-i];
   m++;
 }
-
 
 	temp = right_tr_sum / right_tr - (right_sum - right_tr_sum) / (right_wt - right_tr);
 	tr_var = right_tr_sqr_sum / right_tr - right_tr_sum * right_tr_sum / (right_tr * right_tr);
@@ -264,7 +235,7 @@ void med(int n, double *y[], double *x, int nclass, int edge, double *improve, d
 //	medianeffect_estimator = testmean( y_right_all_tr,  tr_n) - testmean( y_right_all_con, (n - tr_n));
 	
 //	medianeffect_estimator = quick_select5( y_right_all_tr,  tr_n) - quick_select5( y_right_all_con, (n - tr_n));
-	medianeffect_estimator = hodges_lehmann_estimator(y_right_all_tr, y_right_all_con, tr_n, con_n);
+	medianeffect_estimator = hodges_lehmann_estimator(y_right_all_tr,y_right_all_con, tr_n,(n - tr_n));
 	
 	node_effect = alpha * fabs(temp * right_wt - medianeffect_estimator ); //??
 
@@ -300,15 +271,6 @@ void med(int n, double *y[], double *x, int nclass, int edge, double *improve, d
 		    y_left_con[r]= y_right_all_con[i];
 			  y_left_tr[k]= y_right_all_tr[i];
 			 
-
-			  if (treatment[i] != 0) {
-				  left_tr_n++;
-				  right_tr_n--;
-			  } else {
-				  left_con_n++;
-				  right_con_n--;
-			  }
-
 			  r++;
 			  k++;
 
@@ -326,7 +288,7 @@ void med(int n, double *y[], double *x, int nclass, int edge, double *improve, d
 	//	left_medianeffect_estimator = quick_select5( y_left_tr,  left_tr) - quick_select5( y_left_con, (left_wt - left_tr));
 	//	left_medianeffect_estimator = testmean( y_left_tr,  left_tr) - testmean( y_left_con, (left_wt - left_tr));
 		
-		left_medianeffect_estimator= hodges_lehmann_estimator(y_left_tr, y_left_con, left_tr_n, left_con_n);
+		left_medianeffect_estimator= hodges_lehmann_estimator(y_left_tr,y_left_con,left_tr,(left_wt - left_tr));
 		left_effect = alpha * fabs(left_temp * left_wt -  left_medianeffect_estimator );
 
 				right_temp = right_tr_sum / right_tr -
@@ -335,7 +297,7 @@ void med(int n, double *y[], double *x, int nclass, int edge, double *improve, d
 	//	right_medianeffect_estimator = testmean( y_right_tr,  right_tr) - testmean( y_right_con, (right_wt - right_tr));
 //	right_medianeffect_estimator = quick_select5( y_right_tr,  right_tr) - quick_select5( y_right_con, (right_wt - right_tr));
 		
-				right_medianeffect_estimator = hodges_lehmann_estimator(y_right_tr,y_right_con,right_tr_n,right_con_n);
+				right_medianeffect_estimator = hodges_lehmann_estimator(y_right_tr,y_right_con,right_tr,(right_wt - right_tr));
 					right_effect = alpha *fabs(right_temp * right_wt - right_medianeffect_estimator );
 
 				temp = left_effect + right_effect - node_effect;
@@ -362,9 +324,7 @@ void med(int n, double *y[], double *x, int nclass, int edge, double *improve, d
 	 * Categorical predictor
 	 */
 	else {
-	  int *trcount = (int *) ALLOC(nclass, sizeof(int));
-		for (i = 0; i < nclass; i++) {
-			trcount[i] = 0;
+	  for (i = 0; i < nclass; i++) {
 			countn[i] = 0;
 			wts[i] = 0;
 			trs[i] = 0;
@@ -386,10 +346,6 @@ void med(int n, double *y[], double *x, int nclass, int edge, double *improve, d
 			trsums[j] += *y[i] * wt[i] * treatment[i];
 			wtsqrsums[j] += (*y[i]) * (*y[i]) * wt[i];
 			trsqrsums[j] +=  (*y[i]) * (*y[i]) * wt[i] * treatment[i];
-			if (treatment[i] != 0) 
-			{
-				trcount[j]++;
-			}
 		}
 
 		for (i = 0; i < nclass; i++) {
@@ -414,10 +370,6 @@ void med(int n, double *y[], double *x, int nclass, int edge, double *improve, d
 		left_tr_sqr_sum = 0.;
 		r=0;
 		k=0;
-		left_tr_n = 0;
-		left_con_n = 0;
-		right_tr_n = tr_n;
-		right_con_n = con_n;
 
 		best = 0;
 		where = 0;
@@ -443,10 +395,6 @@ void med(int n, double *y[], double *x, int nclass, int edge, double *improve, d
 			
 			r++;
 			k++;
-			left_tr_n += trcount[j];
-			right_tr_n -= trcount[j];
-			left_con_n += countn[j] - trcount[j];
-			right_con_n -= countn[j] - trcount[j];
 
 			left_sqr_sum += wtsqrsums[j];
 			right_sqr_sum -= wtsqrsums[j];
@@ -466,7 +414,7 @@ void med(int n, double *y[], double *x, int nclass, int edge, double *improve, d
 	//		  left_medianeffect_estimator = testmean( y_left_tr,  left_tr) - testmean( y_left_con, (left_wt - left_tr));
 //			 		  left_medianeffect_estimator = quick_select5( y_left_tr,  left_tr) - quick_select5( y_left_con, (left_wt - left_tr));
 
-			  left_medianeffect_estimator= hodges_lehmann_estimator(y_left_tr,y_left_con,left_tr_n,left_con_n);
+			  left_medianeffect_estimator= hodges_lehmann_estimator(y_left_tr,y_left_con,left_tr,(left_wt - left_tr));
 			  
 				left_tr_var = left_tr_sqr_sum / left_tr 
 					- left_tr_sum  * left_tr_sum / (left_tr * left_tr);
@@ -485,7 +433,7 @@ void med(int n, double *y[], double *x, int nclass, int edge, double *improve, d
 		
 		//		right_medianeffect_estimator = quick_select5( y_right_tr,  right_tr) - quick_select5( y_right_con, (right_wt - right_tr));
 				
-				right_medianeffect_estimator = hodges_lehmann_estimator(y_right_tr,y_right_con,right_tr_n,right_con_n);
+				right_medianeffect_estimator = hodges_lehmann_estimator(y_right_tr,y_right_con,right_tr,(right_wt - right_tr));
 				right_effect = alpha *fabs(right_temp * right_wt - right_medianeffect_estimator );
 				
 				right_tr_var = right_tr_sqr_sum / right_tr 
@@ -514,7 +462,6 @@ void med(int n, double *y[], double *x, int nclass, int edge, double *improve, d
 	}
 }
 
-
 void medD(int n, double *y[], double *x, int nclass, int edge, double *improve, double *split,
 		int *csplit, double myrisk, double *wt, double *treatment, int minsize, double alpha,
 		int bucketnum, int bucketMax, double train_to_est_ratio)
@@ -524,7 +471,6 @@ void medD(int n, double *y[], double *x, int nclass, int edge, double *improve, 
 	med(n, y, x, nclass, edge, improve, split, csplit, myrisk, wt, treatment,
 		minsize, alpha, train_to_est_ratio);
 }
-
 
 double
 medpred(double *y, double wt, double treatment, double *yhat, double propensity)

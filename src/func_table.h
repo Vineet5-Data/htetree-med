@@ -239,7 +239,7 @@ static struct {
     void (*choose_split) (int n,double *y[],double *x,int nclass,int edge,double *improve,double *split,int *csplit,double myrisk,double *wt,double *treatment, ...);
     void (*eval) (int n,double *y[],double *value,double *tr_mean,double *con_mean,double *risk,double *wt,double *treatment,double max_y, ...);
     double (*error) (char);
-} split_func_table[] = {
+} split_func_table[] = { // important changes in medinit
     {totinit, (void (*)(int n,double *y[],double *x,int nclass,int edge,double *improve,double *split,int *csplit,double myrisk,double *wt,double *treatment, ...))tot, (void (*)(int n,double *y[],double *value,double *tr_mean,double *con_mean,double *risk,double *wt,double *treatment,double max_y, ...))totss, (double (*)(char))totpred},
     {CTinit, (void (*)(int n,double *y[],double *x,int nclass,int edge,double *improve,double *split,int *csplit,double myrisk,double *wt,double *treatment, ...))CT, (void (*)(int n,double *y[],double *value,double *tr_mean,double *con_mean,double *risk,double *wt,double *treatment,double max_y, ...))CTss, (double (*)(char))CTpred},
     {fitinit, (void (*)(int n,double *y[],double *x,int nclass,int edge,double *improve,double *split,int *csplit,double myrisk,double *wt,double *treatment, ...))fit, (void (*)(int n,double *y[],double *value,double *tr_mean,double *con_mean,double *risk,double *wt,double *treatment,double max_y, ...))fitss, (double (*)(char))fitpred},
@@ -271,5 +271,5 @@ static struct {
     {(double (*)(double *y, ...))policyA_xpred},
 };
 
-#define NUM_SPLIT_RULE 14
+#define NUM_SPLIT_RULE 14 // total number of split rules
 #define NUM_CROSSMETH 11

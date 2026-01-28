@@ -73,7 +73,7 @@ re-estimated tree.}
 are missing.}
 
 \item{split.Rule}{causalTree splitting options, one of \code{"TOT"},
-\code{"CT"}, \code{"fit"}, \code{"tstats"}, four splitting rules in
+\code{"CT"}, \code{"fit"}, \code{"tstats"}, \code{"med"}, five splitting rules in
 \code{causalTree}.  Note that the \code{"tstats"} alternative does
 not have an associated cross-validation method \code{cv.option};
 see Athey and Imbens (2016) for a discussion.  Note further

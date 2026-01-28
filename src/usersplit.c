@@ -10,8 +10,7 @@ static double *uscratch;        /* variously used scratch vector */
 
 int
 usersplit_init(int n, double *y[], int maxcat, char **error,
-		   int *size, int who, double *wt, double *treatment,
-		   int bucketnum, int bucketMax, double *train_to_est_ratio)
+	       double *parm, int *size, int who, double *wt)
 {
     if (who == 1) {
 	/* If who==0 we are being called internally via xval, and don't
@@ -26,7 +25,6 @@ usersplit_init(int n, double *y[], int maxcat, char **error,
 				     sizeof(double));
     }
     *size = n_return;
-	*train_to_est_ratio = n * 1.0 / ct.NumHonest;
     return 0;
 }
 
@@ -43,9 +41,8 @@ usersplit_eval(int n, double *y[], double *value, double *con_mean,
     *risk = uscratch[0];
     *con_mean = NA_REAL;
     *tr_mean = NA_REAL;
-    for (i = 1; i < n_return; i++) {
+    for (i = 1; i < n_return; i++)
 	value[i] = uscratch[i + 1];
-	}
 }
 
 /*
@@ -53,8 +50,8 @@ usersplit_eval(int n, double *y[], double *value, double *con_mean,
  */
 void
 usersplit(int n, double *y[], double *x, int nclass, int edge,
-	  double *wt, double *treatment, int minsize, double alpha,
-	  double train_to_est_ratio)
+	  double *improve, double *split, int *csplit, double myrisk,
+	  double *wt)
 {
     int i, j, k;
     int m;
@@ -163,7 +160,7 @@ usersplit(int n, double *y[], double *x, int nclass, int edge,
  *    use of xpred.causalTree for user-written split routines).
  */
 double
-usersplit_pred(double *y, double wt, double treatment, double *yhat, double propensity)
+usersplit_pred(double *y, double *yhat)
 {
     return 0.0;
 }
