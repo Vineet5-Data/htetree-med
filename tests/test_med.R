@@ -9,16 +9,16 @@ dat <- data.frame(
   X2 = rnorm(n)
 )
 
-fit <- htetree::causalTree(
+fit1 <- htetree::causalTree(
   Y ~ X1 + X2,
   data = dat,
   treatment = dat$W,
-  split.Rule = "med",
+  split.Rule = "medD",
   split.Bucket = FALSE,   
   minsize = 20
 )
 
-print(fit)
+print(fit1)
 
 print(dat)
 
@@ -27,7 +27,7 @@ fit_ct <- htetree::causalTree(
   Y ~ X1 + X2,
   data = dat,
   treatment = dat$W,
-  split.Rule = "CT",
+  split.Rule = "fit",
   split.Bucket = FALSE,
   minsize = 20
 )
